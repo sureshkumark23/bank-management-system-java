@@ -10,23 +10,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Download your code into the runner
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Step 2: Install Java
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          
-      # Step 3: Prove Java is installed
-      - name: Verify Java Installation
-        run: java -version
 
-      # Step 4: Compile the raw Java code (NEW!)
       - name: Compile Java Files
         run: |
           mkdir -p bin
           javac -cp "lib/*" -d bin $(find src -name "*.java")
+
+      # Step 5: Test the Secret (NEW!)
+      - name: Inject and Test Database Password
+        env:
+          MY_DATABASE_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          echo "The password has been securely loaded into the server."
+          echo "If I try to print it, GitHub will hide it like this: $MY_DATABASE_PASSWORD"
