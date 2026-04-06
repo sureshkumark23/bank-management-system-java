@@ -19,8 +19,14 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: '17'
-          distribution: 'temurin' # A popular open-source Java distribution
+          distribution: 'temurin'
           
-      # Step 3: Prove it worked!
+      # Step 3: Prove Java is installed
       - name: Verify Java Installation
         run: java -version
+
+      # Step 4: Compile the raw Java code (NEW!)
+      - name: Compile Java Files
+        run: |
+          mkdir -p bin
+          javac -cp "lib/*" -d bin $(find src -name "*.java")
