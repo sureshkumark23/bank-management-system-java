@@ -1,21 +1,26 @@
-name: My First Resume Pipeline
+name: Java Build Pipeline
 
-# 1. The Trigger
-on: 
+on:
   push:
     branches:
       - main
 
-# 2. The Jobs
 jobs:
-  say-hello:
-    # 3. The Runner
+  setup-environment:
     runs-on: ubuntu-latest
-    
-    # 4. The Steps
+
     steps:
-      - name: Print a greeting to the console
-        run: echo "Hello World! The GitHub Action successfully booted up an Ubuntu server!"
-      
-      - name: Print some system info
-        run: echo "This is running on a temporary server that will be destroyed in a few seconds."
+      # Step 1: Download your code into the runner
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Install Java
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin' # A popular open-source Java distribution
+          
+      # Step 3: Prove it worked!
+      - name: Verify Java Installation
+        run: java -version
