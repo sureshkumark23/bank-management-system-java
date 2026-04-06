@@ -24,10 +24,16 @@ jobs:
           mkdir -p bin
           javac -cp "lib/*" -d bin $(find src -name "*.java")
 
-      # Step 5: Test the Secret (NEW!)
       - name: Inject and Test Database Password
         env:
           MY_DATABASE_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: |
-          echo "The password has been securely loaded into the server."
-          echo "If I try to print it, GitHub will hide it like this: $MY_DATABASE_PASSWORD"
+        run: echo "Successfully loaded password into secure environment."
+
+      # Step 6: Save the compiled code! (NEW!)
+      - name: Upload Compiled App as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bank-management-compiled-app
+          path: |
+            bin/
+            lib/
