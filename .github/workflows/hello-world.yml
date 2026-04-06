@@ -8,15 +8,21 @@ on:
 jobs:
   setup-environment:
     runs-on: ubuntu-latest
+    
+    # THE MATRIX (NEW!)
+    strategy:
+      matrix:
+        java-version: ['11', '17', '21']
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      # Now the robot dynamically chooses the version based on the matrix!
+      - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: ${{ matrix.java-version }}
           distribution: 'temurin'
 
       - name: Compile Java Files
@@ -27,13 +33,13 @@ jobs:
       - name: Inject and Test Database Password
         env:
           MY_DATABASE_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: echo "Successfully loaded password into secure environment."
+        run: echo "Successfully loaded password."
 
-      # Step 6: Save the compiled code! (NEW!)
+      # We dynamically name the zip file so they don't overwrite each other!
       - name: Upload Compiled App as Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: bank-management-compiled-app
+          name: bank-management-compiled-java-${{ matrix.java-version }}
           path: |
             bin/
             lib/
