@@ -1,4 +1,4 @@
-name: Java Build Pipeline
+name: Java Build & Deploy Pipeline
 
 on:
   push:
@@ -6,19 +6,19 @@ on:
       - main
 
 jobs:
-  setup-environment:
+  # ---------------------------------------------
+  # JOB 1: CONTINUOUS INTEGRATION (CI)
+  # ---------------------------------------------
+  build-and-test:
     runs-on: ubuntu-latest
-    
-    # THE MATRIX (NEW!)
     strategy:
       matrix:
-        java-version: [ '17', '21']
-
+        java-version: ['17', '21']
+        
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Now the robot dynamically chooses the version based on the matrix!
       - name: Set up JDK ${{ matrix.java-version }}
         uses: actions/setup-java@v4
         with:
@@ -30,12 +30,6 @@ jobs:
           mkdir -p bin
           javac -cp "lib/*" -d bin $(find src -name "*.java")
 
-      - name: Inject and Test Database Password
-        env:
-          MY_DATABASE_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: echo "Successfully loaded password."
-
-      # We dynamically name the zip file so they don't overwrite each other!
       - name: Upload Compiled App as Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -43,3 +37,36 @@ jobs:
           path: |
             bin/
             lib/
+
+  # ---------------------------------------------
+  # JOB 2: CONTINUOUS DELIVERY (CD)
+  # ---------------------------------------------
+  deploy-release:
+    needs: build-and-test # Tells the robot: DO NOT deploy if the tests fail!
+    runs-on: ubuntu-latest
+    
+    # We must give the robot security permission to write to your repository
+    permissions:
+      contents: write 
+      
+    steps:
+      # Step 1: Download the Java 17 artifact from Job 1
+      - name: Download Java 17 Build
+        uses: actions/download-artifact@v4
+        with:
+          name: bank-management-compiled-java-17
+          path: final-release-folder
+
+      # Step 2: Zip the folder so users can download it easily
+      - name: Zip the Application
+        run: zip -r BankManagementSystem.zip final-release-folder/
+
+      # Step 3: Publish it to the GitHub Releases page
+      - name: Create Auto-Release
+        uses: softprops/action-gh-release@v2
+        with:
+          # Automatically generates a new version number every time you push code!
+          tag_name: "v1.0.${{ github.run_number }}"
+          name: "Bank Management System - Auto Release v1.0.${{ github.run_number }}"
+          body: "This is an official, automated release compiled by GitHub Actions."
+          files: BankManagementSystem.zip
