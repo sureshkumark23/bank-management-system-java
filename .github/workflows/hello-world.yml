@@ -1,0 +1,21 @@
+name: My First Resume Pipeline
+
+# 1. The Trigger
+on: 
+  push:
+    branches:
+      - main
+
+# 2. The Jobs
+jobs:
+  say-hello:
+    # 3. The Runner
+    runs-on: ubuntu-latest
+    
+    # 4. The Steps
+    steps:
+      - name: Print a greeting to the console
+        run: echo "Hello World! The GitHub Action successfully booted up an Ubuntu server!"
+      
+      - name: Print some system info
+        run: echo "This is running on a temporary server that will be destroyed in a few seconds."
